@@ -1,56 +1,44 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const video = document.querySelector('.player__video.viewer');
-  const progressBar = document.querySelector('.progress__filled');
-  const playButton = document.querySelector('.player__button');
-  const volumeInput = document.querySelector('.player__slider[name="volume"]');
-  const playbackSpeedInput = document.querySelector('.player__slider[name="playbackRate"]');
-  const rewindButton = document.querySelector('.player__button[data-skip="-10"]');
-  const forwardButton = document.querySelector('.player__button[data-skip="25"]');
+const player = document.querySelector(".player");
+const video = player.querySelector(".viewer");
+const progress = player.querySelector(".progress");
+const progressBar = player.querySelector(".progress__filled");
+const toggle = player.querySelector(".toggle");
+const skipButtons = player.querySelectorAll("[data-skip]");
+const ranges = player.querySelectorAll(".player__slider");
 
-  // Set video source
-  video.src = 'http://clips.vorwaerts-gmbh.de/VfE_html5.mp4';
+toggle.addEventListener("click", togglePlay);
 
-  // Play/Pause toggle
-  playButton.addEventListener('click', function () {
-    if (video.paused) {
-      video.play();
-      playButton.textContent = '❚ ❚';
-    } else {
-      video.pause();
-      playButton.textContent = '►';
-    }
-  });
+video.addEventListener("timeupdate", handlerProgress);
 
-  // Update progress bar
-  video.addEventListener('timeupdate', function () {
-    const progress = (video.currentTime / video.duration) * 100;
-    progressBar.style.flexBasis = `${progress}%`;
-  });
+for (let skip of skipButtons) {
+  skip.addEventListener("click", forwardOrBackward);
+}
 
-  // Set volume
-  volumeInput.addEventListener('input', function () {
-    video.volume = volumeInput.value;
-  });
+for (let range of ranges) {
+  range.addEventListener("change", handleRangeUpdate);
+}
 
-  // Set playback speed
-  playbackSpeedInput.addEventListener('input', function () {
-    video.playbackRate = playbackSpeedInput.value;
-  });
+function togglePlay() {
+  if (video.paused) {
+    video.play();
+    toggle.innerText = "❚ ❚";
+  } else {
+    video.pause();
+    toggle.innerText = "►";
+  }
+}
 
-  // Rewind 10 seconds
-  rewindButton.addEventListener('click', function () {
-    video.currentTime -= 10;
-  });
+function handlerProgress() {
+  const currentProgress = (video.currentTime / video.duration) * 100;
+  progressBar.style.flexBasis = `${currentProgress}%`;
+}
 
-  // Forward 25 seconds
-  forwardButton.addEventListener('click', function () {
-    video.currentTime += 25;
-  });
+function forwardOrBackward(event) {
+  let element = event.target;
+  video.currentTime += parseFloat(element.attributes["data-skip"].value);
+}
 
-  // Handle video duration error
-  video.addEventListener('loadedmetadata', function () {
-    if (video.duration !== 60.08) {
-      console.error('Error: Video duration is not as expected.');
-    }
-  });
-});
+function handleRangeUpdate(event) {
+  let element = event.target;
+  video[element.name] = element.value;
+}
