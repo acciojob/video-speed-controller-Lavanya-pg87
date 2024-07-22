@@ -1,73 +1,56 @@
-// const inputs = document.querySelectorAll('.controls input');
+document.addEventListener('DOMContentLoaded', function () {
+  const video = document.querySelector('.player__video.viewer');
+  const progressBar = document.querySelector('.progress__filled');
+  const playButton = document.querySelector('.player__button');
+  const volumeInput = document.querySelector('.player__slider[name="volume"]');
+  const playbackSpeedInput = document.querySelector('.player__slider[name="playbackRate"]');
+  const rewindButton = document.querySelector('.player__button[data-skip="-10"]');
+  const forwardButton = document.querySelector('.player__button[data-skip="25"]');
 
-//     function handleUpdate() {
-//       const suffix = this.dataset.sizing || '';
-//       document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix);
-//     }
+  // Set video source
+  video.src = 'http://clips.vorwaerts-gmbh.de/VfE_html5.mp4';
 
-//     inputs.forEach(input => input.addEventListener('change', handleUpdate));
-//     inputs.forEach(input => input.addEventListener('mousemove', handleUpdate));
-// Get DOM elements
-const player = document.querySelector('.player');
-const video = player.querySelector('.viewer');
-const progress = player.querySelector('.progress');
-const progressBar = player.querySelector('.progress__filled');
-const toggle = player.querySelector('.toggle');
-const volume = player.querySelector('input[name="volume"]');
-const playbackSpeed = player.querySelector('input[name="playbackRate"]');
-const skipButtons = player.querySelectorAll('[data-skip]');
+  // Play/Pause toggle
+  playButton.addEventListener('click', function () {
+    if (video.paused) {
+      video.play();
+      playButton.textContent = '❚ ❚';
+    } else {
+      video.pause();
+      playButton.textContent = '►';
+    }
+  });
 
-// Play/Pause functionality
-function togglePlay() {
-  if (video.paused) {
-    video.play();
-  } else {
-    video.pause();
-  }
-}
+  // Update progress bar
+  video.addEventListener('timeupdate', function () {
+    const progress = (video.currentTime / video.duration) * 100;
+    progressBar.style.flexBasis = `${progress}%`;
+  });
 
-// Update Play/Pause button appearance
-function updatePlayButton() {
-  toggle.textContent = video.paused ? '►' : '❚ ❚';
-}
+  // Set volume
+  volumeInput.addEventListener('input', function () {
+    video.volume = volumeInput.value;
+  });
 
-// Update video progress
-function updateProgress() {
-  const progressPercent = (video.currentTime / video.duration) * 100;
-  progressBar.style.flexBasis = `${progressPercent}%`;
-}
+  // Set playback speed
+  playbackSpeedInput.addEventListener('input', function () {
+    video.playbackRate = playbackSpeedInput.value;
+  });
 
-// Set video progress based on clicked position on progress bar
-function setProgress(e) {
-  const progressWidth = progress.offsetWidth;
-  const clickedPosition = e.offsetX;
-  const newTime = (clickedPosition / progressWidth) * video.duration;
-  video.currentTime = newTime;
-}
+  // Rewind 10 seconds
+  rewindButton.addEventListener('click', function () {
+    video.currentTime -= 10;
+  });
 
-// Set volume of the video
-function setVolume() {
-  video.volume = volume.value;
-}
+  // Forward 25 seconds
+  forwardButton.addEventListener('click', function () {
+    video.currentTime += 25;
+  });
 
-// Set playback speed of the video
-function setPlaybackSpeed() {
-  video.playbackRate = playbackSpeed.value;
-}
-
-// Skip video forward or backward based on data-skip value
-function skip() {
-  const skipAmount = parseFloat(this.dataset.skip);
-  video.currentTime += skipAmount;
-}
-
-// Add event listeners
-video.addEventListener('click', togglePlay);
-video.addEventListener('play', updatePlayButton);
-video.addEventListener('pause', updatePlayButton);
-video.addEventListener('timeupdate', updateProgress);
-toggle.addEventListener('click', togglePlay);
-progress.addEventListener('click', setProgress);
-volume.addEventListener('input', setVolume);
-playbackSpeed.addEventListener('input', setPlaybackSpeed);
-skipButtons.forEach((button) => button.addEventListener('click', skip));
+  // Handle video duration error
+  video.addEventListener('loadedmetadata', function () {
+    if (video.duration !== 60.08) {
+      console.error('Error: Video duration is not as expected.');
+    }
+  });
+});
